@@ -1,27 +1,70 @@
 let state = 0; // 0:待機, 1:記憶, 2:入力, 3:結果
-let currentShape = 0; 
-let targets = []; 
-let userStrokes = []; 
-let highScores = []; 
-let confetti = []; // 紙吹雪パーティクル用の配列
+let currentShape = 0;
+let currentPlayerName = "";
+let targets = [];
+let userStrokes = [];
+let highScores = [];
+let confetti = [];
 let timerId = null;
+let memorizeStartTime = 0;
+const MEMORIZE_DURATION = 2200;
 
+const titleScreen = document.getElementById('title-screen');
+const gameScreen = document.getElementById('game-screen');
+const playerNameInput = document.getElementById('player-name-input');
+const nameError = document.getElementById('name-error');
+const enterGameBtn = document.getElementById('enter-game-btn');
+
+const displayPlayerName = document.getElementById('display-player-name');
+const changeNameBtn = document.getElementById('change-name-btn');
 const startBtn = document.getElementById('start-btn');
 const clearBtn = document.getElementById('clear-btn');
 const checkBtn = document.getElementById('check-btn');
 const retryBtn = document.getElementById('retry-btn');
 const resetRankingBtn = document.getElementById('reset-ranking-btn');
-
 const resultText = document.getElementById('result-text');
 const bestScoreText = document.getElementById('best-score');
-const playerNameInput = document.getElementById('player-name');
 const modeSelect = document.getElementById('mode-select');
 const titleBadge = document.getElementById('title-badge');
 
+// タイトル画面の入室処理
+enterGameBtn.addEventListener('click', enterGame);
+playerNameInput.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') enterGame();
+});
+
+function enterGame() {
+  const rawName = playerNameInput.value.trim();
+  if (rawName === "") {
+    nameError.classList.add('visible');
+    playerNameInput.classList.remove('shake');
+    void playerNameInput.offsetWidth;
+    playerNameInput.classList.add('shake');
+    playerNameInput.focus();
+    return;
+  }
+
+  nameError.classList.remove('visible');
+  currentPlayerName = rawName;
+  displayPlayerName.textContent = currentPlayerName;
+
+  titleScreen.classList.add('hidden');
+  gameScreen.classList.remove('hidden');
+}
+
+changeNameBtn.addEventListener('click', function() {
+  if (timerId) clearTimeout(timerId);
+  retryGame();
+  gameScreen.classList.add('hidden');
+  titleScreen.classList.remove('hidden');
+  playerNameInput.focus();
+});
+
 function setup() {
   let canvas = createCanvas(400, 400);
-  canvas.parent("p5-wrapper"); 
+  canvas.parent("p5-wrapper");
   strokeCap(ROUND);
+  strokeJoin(ROUND);
 
   startBtn.addEventListener('click', startGame);
   clearBtn.addEventListener('click', clearStrokes);
@@ -29,61 +72,73 @@ function setup() {
   retryBtn.addEventListener('click', retryGame);
   resetRankingBtn.addEventListener('click', resetRanking);
 
-  highScores = JSON.parse(localStorage.getItem('memoryGameScores_v3')) || [];
+  highScores = JSON.parse(localStorage.getItem('sketchMemoryScores')) || [];
   updateRankingDisplay();
   updateButtonStates();
 }
 
 function draw() {
-  background(250); 
+  // 温かみのある上質紙のような背景色
+  background(249, 247, 242);
 
-  // 1. お手本の描画（記憶フェーズ or 結果フェーズ）
-  if (state === 1 || state === 3) {
-    noFill(); 
-    stroke(100, 180, 220, state === 3 ? 100 : 255);
-    strokeWeight(6); 
-    if (targets.length > 0) {
-      beginShape();
-      for (let i = 0; i < targets.length; i++) {
-        vertex(targets[i].x, targets[i].y);
-      }
-      endShape(CLOSE);
-    }
+  // 「かんたん」モードのときだけ背景にうっすら方眼ガイドを描画
+  if (modeSelect.value === "easy") {
+    drawGridGuide();
   }
 
-  // 2. ユーザーが描いた線の描画（入力フェーズ or 結果フェーズ）
+  // 記憶時間の残りゲージ
+  if (state === 1) {
+    let elapsed = millis() - memorizeStartTime;
+    let ratio = constrain(1 - (elapsed / MEMORIZE_DURATION), 0, 1);
+    noStroke();
+    fill(31, 111, 102, 45);
+    rect(0, 0, width, 5);
+    fill(31, 111, 102);
+    rect(0, 0, width * ratio, 5);
+  }
+
+  // お手本の描画（記憶フェーズと結果画面のみ表示。入力中は全モードで完全に消える）
+  if (state === 1) {
+    noFill();
+    stroke(31, 111, 102);
+    strokeWeight(5);
+    drawTargetShape();
+  } else if (state === 3) {
+    noFill();
+    stroke(31, 111, 102, 120);
+    strokeWeight(5);
+    drawTargetShape();
+  }
+
+  // ユーザーの描いた線
   if (state === 2 || state === 3) {
-    let isVanishMode = (modeSelect.value === "vanish");
-    strokeWeight(8);
+    let isHardMode = (modeSelect.value === "hard");
+    strokeWeight(6);
 
     for (let i = 0; i < userStrokes.length; i++) {
-      let strokePoints = userStrokes[i];
+      let points = userStrokes[i];
+      for (let j = 0; j < points.length; j++) {
+        let pt = points[j];
 
-      for (let j = 0; j < strokePoints.length; j++) {
-        let pt = strokePoints[j];
-
-        // 消えるモード中は少しずつ透明にする
-        if (state === 2 && isVanishMode) {
-          pt.alpha = max(0, pt.alpha - 4);
+        if (state === 2 && isHardMode) {
+          pt.alpha = max(0, pt.alpha - 4.5);
         }
 
-        // 結果発表時はすべてハッキリ表示する
         let displayAlpha = (state === 3) ? 255 : pt.alpha;
-
         if (displayAlpha > 0) {
-          stroke(255, 100, 120, displayAlpha);
+          stroke(217, 78, 63, displayAlpha);
           if (j === 0) {
             point(pt.x, pt.y);
           } else {
-            let prevPt = strokePoints[j - 1];
-            line(prevPt.x, prevPt.y, pt.x, pt.y);
+            let prev = points[j - 1];
+            line(prev.x, prev.y, pt.x, pt.y);
           }
         }
       }
     }
   }
 
-  // 3. 高得点時の紙吹雪アニメーション（結果フェーズ）
+  // 高得点時の紙吹雪
   if (state === 3 && confetti.length > 0) {
     noStroke();
     for (let i = 0; i < confetti.length; i++) {
@@ -96,23 +151,54 @@ function draw() {
       rect(0, 0, c.w, c.h);
       pop();
 
-      // 位置と回転を更新
       c.x += c.vx;
       c.y += c.vy;
-      c.vy += 0.15; // 重力で少しずつ下に落ちる
+      c.vy += 0.15;
       c.angle += c.vAngle;
     }
   }
 }
 
+// かんたんモード用の方眼ノート風ガイド線
+function drawGridGuide() {
+  for (let x = 40; x < width; x += 40) {
+    if (x === 200) {
+      stroke(160, 152, 140, 110); // 中央線は少し濃く
+    } else {
+      stroke(160, 152, 140, 55);
+    }
+    strokeWeight(1);
+    line(x, 0, x, height);
+  }
+  for (let y = 40; y < height; y += 40) {
+    if (y === 200) {
+      stroke(160, 152, 140, 110);
+    } else {
+      stroke(160, 152, 140, 55);
+    }
+    strokeWeight(1);
+    line(0, y, width, y);
+  }
+}
+
+function drawTargetShape() {
+  if (targets.length > 0) {
+    beginShape();
+    for (let i = 0; i < targets.length; i++) {
+      vertex(targets[i].x, targets[i].y);
+    }
+    endShape(CLOSE);
+  }
+}
+
 function mousePressed() {
-  if (state === 2 && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+  if (state === 2 && mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
     userStrokes.push([]);
   }
 }
 
 function mouseDragged() {
-  if (state === 2 && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+  if (state === 2 && mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
     if (userStrokes.length > 0) {
       userStrokes[userStrokes.length - 1].push({ x: mouseX, y: mouseY, alpha: 255 });
     }
@@ -128,74 +214,89 @@ function startGame() {
   titleBadge.classList.add('hidden');
   updateButtonStates();
 
-  resultText.textContent = "図形の形を記憶して！";
-  resultText.style.color = "#2c3e50";
+  resultText.textContent = "形と位置を覚えてください";
+  resultText.style.color = "#1f6f66";
 
-  currentShape = floor(random(5));
+  currentShape = floor(random(8));
   generateShapeTargets(currentShape);
+  memorizeStartTime = millis();
 
   timerId = setTimeout(function() {
     if (state === 1) {
       state = 2;
       updateButtonStates();
-      if (modeSelect.value === "vanish") {
-        resultText.textContent = "線が消えるぞ！感覚を信じてなぞって！";
+      if (modeSelect.value === "easy") {
+        resultText.style.color = "#26282a";
+        resultText.textContent = "方眼のマス目を頼りに輪郭をなぞろう";
+      } else if (modeSelect.value === "hard") {
+        resultText.style.color = "#d94e3f";
+        resultText.textContent = "描いた線が消えます！感覚でなぞろう";
       } else {
-        resultText.textContent = "記憶を頼りに輪郭をなぞって！";
+        resultText.style.color = "#26282a";
+        resultText.textContent = "記憶を頼りに輪郭をなぞろう";
       }
     }
-  }, 2000);
+  }, MEMORIZE_DURATION);
 }
 
-// なぞり書き中の線だけを消す（描き直し）
 function clearStrokes() {
   if (state === 2) {
     userStrokes = [];
-    resultText.textContent = "リセットしました！もう一度なぞってね。";
+    resultText.textContent = "線を消しました。もう一度なぞってください";
   }
 }
 
+// 8種類の図形データ生成
 function generateShapeTargets(shape) {
   if (shape === 0) { // 円
-    for (let angle = 0; angle < TWO_PI; angle += 0.1) {
-      targets.push({ x: 200 + cos(angle) * 110, y: 200 + sin(angle) * 110 });
+    for (let a = 0; a < TWO_PI; a += 0.1) {
+      targets.push({ x: 200 + cos(a) * 115, y: 200 + sin(a) * 115 });
     }
-  } else if (shape === 1) { // 四角
-    targets.push({ x: 100, y: 100 }); targets.push({ x: 300, y: 100 });
-    targets.push({ x: 300, y: 300 }); targets.push({ x: 100, y: 300 });
-    interpolatePoints(); 
-  } else if (shape === 2) { // 猫
-    targets.push({ x: 120, y: 80 });  targets.push({ x: 160, y: 130 }); 
-    targets.push({ x: 240, y: 130 }); targets.push({ x: 280, y: 80 });  
-    targets.push({ x: 310, y: 180 }); 
-    for (let angle = 0; angle <= PI; angle += 0.1) {
-      targets.push({ x: 200 + cos(angle) * 115, y: 180 + sin(angle) * 120 });
+  } else if (shape === 1) { // 正方形
+    targets.push({ x: 95, y: 95 }, { x: 305, y: 95 }, { x: 305, y: 305 }, { x: 95, y: 305 });
+  } else if (shape === 2) { // 正三角形
+    targets.push({ x: 200, y: 75 }, { x: 320, y: 295 }, { x: 80, y: 295 });
+  } else if (shape === 3) { // ひし形
+    targets.push({ x: 200, y: 70 }, { x: 310, y: 200 }, { x: 200, y: 330 }, { x: 90, y: 200 });
+  } else if (shape === 4) { // 六角形
+    for (let i = 0; i < 6; i++) {
+      let a = i * TWO_PI / 6 - HALF_PI;
+      targets.push({ x: 200 + cos(a) * 120, y: 200 + sin(a) * 120 });
     }
-    targets.push({ x: 90, y: 180 });  
-    interpolatePoints();
-  } else if (shape === 3) { // 星
+  } else if (shape === 5) { // 星
     let outer = 130, inner = 55;
     for (let i = 0; i < 10; i++) {
-      let angle = i * TWO_PI / 10 - HALF_PI;
+      let a = i * TWO_PI / 10 - HALF_PI;
       let r = (i % 2 === 0) ? outer : inner;
-      targets.push({ x: 200 + cos(angle) * r, y: 200 + sin(angle) * r });
+      targets.push({ x: 200 + cos(a) * r, y: 205 + sin(a) * r });
     }
-    interpolatePoints();
-  } else if (shape === 4) { // ハート
-    for (let angle = 0; angle < TWO_PI; angle += 0.05) {
-      let x = 200 + 8 * (16 * pow(sin(angle), 3));
-      let y = 170 - 8 * (13 * cos(angle) - 5 * cos(2*angle) - 2 * cos(3*angle) - cos(4*angle));
+  } else if (shape === 6) { // ハート
+    for (let a = 0; a < TWO_PI; a += 0.08) {
+      let x = 200 + 8 * (16 * pow(sin(a), 3));
+      let y = 180 - 8 * (13 * cos(a) - 5 * cos(2 * a) - 2 * cos(3 * a) - cos(4 * a));
       targets.push({ x: x, y: y });
     }
+  } else if (shape === 7) { // 稲妻
+    targets.push(
+      { x: 220, y: 65 },
+      { x: 115, y: 215 },
+      { x: 195, y: 215 },
+      { x: 175, y: 335 },
+      { x: 285, y: 185 },
+      { x: 205, y: 185 }
+    );
   }
+
+  interpolatePoints();
 }
 
 function interpolatePoints() {
   let temp = [];
   for (let i = 0; i < targets.length; i++) {
-    let p1 = targets[i]; let p2 = targets[(i + 1) % targets.length];
+    let p1 = targets[i];
+    let p2 = targets[(i + 1) % targets.length];
     let d = dist(p1.x, p1.y, p2.x, p2.y);
-    let steps = max(1, floor(d / 5)); 
+    let steps = max(1, floor(d / 5));
     for (let t = 0; t < 1; t += 1 / steps) {
       temp.push({ x: lerp(p1.x, p2.x, t), y: lerp(p1.y, p2.y, t) });
     }
@@ -205,73 +306,88 @@ function interpolatePoints() {
 
 function checkResult() {
   if (state !== 2) return;
-  
+
   let allUserPoints = [];
   for (let i = 0; i < userStrokes.length; i++) {
     allUserPoints = allUserPoints.concat(userStrokes[i]);
   }
   if (allUserPoints.length === 0) {
-    resultText.textContent = "まずは線を描いてから判定してね！";
+    resultText.style.color = "#d94e3f";
+    resultText.textContent = "線を描いてから判定ボタンを押してください";
     return;
   }
 
   state = 3;
   updateButtonStates();
 
-  let totalScore = 0;
+  // 線からのズレ（正確さ）
+  let precisionSum = 0;
   for (let i = 0; i < allUserPoints.length; i++) {
     let minDist = 9999;
     for (let j = 0; j < targets.length; j++) {
       let d = dist(allUserPoints[i].x, allUserPoints[i].y, targets[j].x, targets[j].y);
       if (d < minDist) minDist = d;
     }
-    totalScore += max(0, 40 - minDist); 
+    precisionSum += max(0, 42 - minDist) / 42;
   }
+  let precisionRate = precisionSum / allUserPoints.length;
 
-  let finalScore = floor((totalScore / (allUserPoints.length * 40)) * 100);
-  if (allUserPoints.length < 50) finalScore = floor(finalScore / 2);
+  // 輪郭全体をどれだけなぞれたか（カバー率）
+  let coveredCount = 0;
+  for (let j = 0; j < targets.length; j++) {
+    let minDist = 9999;
+    for (let i = 0; i < allUserPoints.length; i++) {
+      let d = dist(targets[j].x, targets[j].y, allUserPoints[i].x, allUserPoints[i].y);
+      if (d < minDist) minDist = d;
+    }
+    if (minDist < 28) {
+      coveredCount++;
+    }
+  }
+  let coverageRate = coveredCount / targets.length;
 
-  // 85%以上の高得点なら紙吹雪を発生させる
+  let rawScore = (precisionRate * 0.55 + coverageRate * 0.45) * 100;
+  let finalScore = constrain(round(rawScore), 0, 100);
+
   if (finalScore >= 85) {
     createConfetti();
   }
 
-  let isVanish = (modeSelect.value === "vanish");
-  let titleText = getUniqueTitle(finalScore, isVanish);
+  let mode = modeSelect.value;
+  let titleText = getUniqueTitle(finalScore, mode);
 
-  // プレイヤー名を取得（未入力なら「ゲスト」）
-  let rawName = playerNameInput.value.trim();
-  let playerName = rawName === "" ? "ゲスト" : rawName;
+  resultText.style.color = "#d94e3f";
+  resultText.textContent = `${currentPlayerName}さんの一致度：${finalScore}%`;
 
-  resultText.style.color = "#e74c3c";
-  resultText.textContent = `${playerName}さんの一致度：${finalScore}％！`;
-  
-  titleBadge.textContent = `称号：【${titleText}】`;
+  titleBadge.textContent = `称号：${titleText}`;
   titleBadge.classList.remove('hidden');
 
+  let modeLabel = "ふつう";
+  if (mode === "easy") modeLabel = "かんたん";
+  if (mode === "hard") modeLabel = "むずかしい";
+
   highScores.push({
-    name: playerName,
+    name: currentPlayerName,
     score: finalScore,
     title: titleText,
-    mode: isVanish ? "👻" : "🖊️"
-  }); 
-  highScores.sort((a, b) => b.score - a.score); 
-  highScores = highScores.slice(0, 5); 
-  localStorage.setItem('memoryGameScores_v3', JSON.stringify(highScores));
-  
+    modeLabel: modeLabel
+  });
+  highScores.sort((a, b) => b.score - a.score);
+  highScores = highScores.slice(0, 5);
+  localStorage.setItem('sketchMemoryScores', JSON.stringify(highScores));
+
   updateRankingDisplay();
 }
 
-// 紙吹雪のパーティクルを生成する関数
 function createConfetti() {
   confetti = [];
-  const colors = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93'];
-  for (let i = 0; i < 60; i++) {
+  const colors = ['#1f6f66', '#d94e3f', '#e5a93c', '#3d5a80', '#7b6d8d'];
+  for (let i = 0; i < 65; i++) {
     confetti.push({
       x: 200,
-      y: 180,
-      vx: random(-6, 6),
-      vy: random(-9, -2),
+      y: 190,
+      vx: random(-7, 7),
+      vy: random(-10, -2),
       w: random(6, 12),
       h: random(4, 8),
       angle: random(TWO_PI),
@@ -281,27 +397,21 @@ function createConfetti() {
   }
 }
 
-function getUniqueTitle(score, isVanish) {
-  if (isVanish && score >= 85) {
+function getUniqueTitle(score, mode) {
+  if (mode === "hard" && score >= 85) {
     return "暗闇の魔術師";
-  } else if (score >= 95) {
-    return "人間コピー機";
-  } else if (score >= 85) {
-    return "超記憶マスター";
-  } else if (score >= 70) {
-    return "なかなかの画伯";
-  } else if (score >= 50) {
-    return "うろ覚えアーティスト";
-  } else if (score >= 30) {
-    return "前衛的な抽象画家";
-  } else {
-    return "記憶喪失のピカソ";
   }
+  if (score >= 95) return "人間コピー機";
+  if (score >= 85) return "記憶の匠";
+  if (score >= 70) return "いい線いってる画伯";
+  if (score >= 50) return "うろ覚えスケッチャー";
+  if (score >= 30) return "前衛的な抽象画家";
+  return "自由すぎるピカソ";
 }
 
 function updateRankingDisplay() {
   const rankingList = document.getElementById('ranking-list');
-  rankingList.innerHTML = ''; 
+  rankingList.innerHTML = '';
 
   if (highScores.length > 0) {
     bestScoreText.textContent = highScores[0].score;
@@ -310,67 +420,59 @@ function updateRankingDisplay() {
   }
 
   for (let i = 0; i < highScores.length; i++) {
-    const li = document.createElement('li'); 
-    
-    // セキュリティ対策：innerHTMLではなくtextContentを使って安全に文字列を表示
+    const li = document.createElement('li');
+
     const leftSpan = document.createElement('span');
-    leftSpan.textContent = `${i + 1}位 ${highScores[i].mode} ${highScores[i].name}（${highScores[i].title}）`;
-    
+    leftSpan.textContent = `${i + 1}位 [${highScores[i].modeLabel}] ${highScores[i].name}（${highScores[i].title}）`;
+
     const rightSpan = document.createElement('span');
-    rightSpan.textContent = `${highScores[i].score} ％`;
-    
+    rightSpan.className = 'rank-score';
+    rightSpan.textContent = `${highScores[i].score}%`;
+
     li.appendChild(leftSpan);
     li.appendChild(rightSpan);
-    rankingList.appendChild(li); 
+    rankingList.appendChild(li);
   }
 }
 
-// ランキング履歴のリセット
 function resetRanking() {
   if (confirm("ランキングの履歴をすべて削除しますか？")) {
     highScores = [];
-    localStorage.removeItem('memoryGameScores_v3');
+    localStorage.removeItem('sketchMemoryScores');
     updateRankingDisplay();
   }
 }
 
 function retryGame() {
   if (timerId) clearTimeout(timerId);
-  state = 0; 
-  targets = []; 
+  state = 0;
+  targets = [];
   userStrokes = [];
   confetti = [];
   titleBadge.classList.add('hidden');
-  resultText.textContent = "「スタート」を押して図形を記憶！";
-  resultText.style.color = "#2c3e50";
+  resultText.textContent = "「スタート」を押すと図形が表示されます";
+  resultText.style.color = "#26282a";
   updateButtonStates();
 }
 
-// ゲームの状態に合わせてボタンの有効・無効を切り替える関数
 function updateButtonStates() {
-  if (state === 0) { // 待機中
+  if (state === 0 || state === 3) {
     startBtn.disabled = false;
     clearBtn.disabled = true;
     checkBtn.disabled = true;
-    playerNameInput.disabled = false;
     modeSelect.disabled = false;
-  } else if (state === 1) { // 記憶フェーズ
+    changeNameBtn.disabled = false;
+  } else if (state === 1) {
     startBtn.disabled = true;
     clearBtn.disabled = true;
     checkBtn.disabled = true;
-    playerNameInput.disabled = true;
     modeSelect.disabled = true;
-  } else if (state === 2) { // 入力フェーズ
+    changeNameBtn.disabled = true;
+  } else if (state === 2) {
     startBtn.disabled = true;
     clearBtn.disabled = false;
     checkBtn.disabled = false;
-    playerNameInput.disabled = true;
     modeSelect.disabled = true;
-  } else if (state === 3) { // 結果発表
-    startBtn.disabled = false;
-    clearBtn.disabled = true;
-    checkBtn.disabled = true;
-    playerNameInput.disabled = false;
-    modeSelect.disabled = false;
+    changeNameBtn.disabled = true;
   }
 }

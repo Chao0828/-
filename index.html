@@ -3,49 +3,86 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>瞬間記憶！なぞり書きメモリー</title>
+  <title>かたち記憶スケッチ</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
 </head>
 <body>
-  <div class="app-container">
-    <div class="header">
-      <h1>なぞり書き<br>メモリー</h1>
-      
-      <!-- 最高スコア表示 -->
-      <div id="high-score-badge">👑 最高スコア: <span id="best-score">--</span> ％</div>
 
-      <!-- プレイヤー名＆モード選択エリア -->
-      <div class="settings-area">
-        <input type="text" id="player-name" placeholder="名前を入力 (最大10文字)" maxlength="10">
-        <select id="mode-select">
-          <option value="normal">🖊️ 普通モード</option>
-          <option value="vanish">👻 消えるインク（上級）</option>
-        </select>
+  <!-- タイトル＆ニックネーム入力画面 -->
+  <div id="title-screen" class="card">
+    <span class="sub-label">SHAPE MEMORY SKETCH</span>
+    <h1 class="main-title">かたち記憶スケッチ</h1>
+    <p class="lead">一瞬だけ表示される図形を覚えて、<br>フリーハンドで正確になぞる記憶ゲーム</p>
+
+    <div class="rules">
+      <div class="rule-item">
+        <span class="step-num">1</span>
+        <p>図形を2秒で記憶</p>
       </div>
+      <div class="rule-item">
+        <span class="step-num">2</span>
+        <p>輪郭をなぞって再現</p>
+      </div>
+      <div class="rule-item">
+        <span class="step-num">3</span>
+        <p>一致度と称号を獲得</p>
+      </div>
+    </div>
 
-      <p id="result-text">「スタート」を押して図形を記憶！</p>
-      
-      <!-- ユニーク称号バッジ -->
+    <div class="login-box">
+      <label for="player-name-input">ニックネームを入力してスタート</label>
+      <input type="text" id="player-name-input" placeholder="例：たろう（10文字まで）" maxlength="10" autocomplete="off">
+      <p id="name-error" class="error-msg">プレイするにはニックネームを入力してください</p>
+      <button id="enter-game-btn" class="btn btn-primary btn-full">ゲームを始める</button>
+    </div>
+  </div>
+
+  <!-- メインゲーム画面 -->
+  <div id="game-screen" class="card hidden">
+    <div class="header-bar">
+      <div class="user-info">
+        <span class="user-label">プレイヤー</span>
+        <strong id="display-player-name">ゲスト</strong>
+        <button id="change-name-btn" class="text-btn">変更</button>
+      </div>
+      <div class="best-score-box">
+        最高記録 <strong id="best-score">--</strong>%
+      </div>
+    </div>
+
+    <div class="mode-bar">
+      <label for="mode-select">難易度</label>
+      <select id="mode-select">
+        <option value="easy">かんたん（方眼ガイドあり）</option>
+        <option value="normal" selected>ふつう（ガイドなし）</option>
+        <option value="hard">むずかしい（描いた線が消える）</option>
+      </select>
+    </div>
+
+    <div class="message-area">
+      <p id="result-text">「スタート」を押すと図形が表示されます</p>
       <div id="title-badge" class="hidden"></div>
     </div>
 
-    <!-- p5.jsのキャンバスが入る場所 -->
     <div id="p5-wrapper"></div>
 
-    <!-- 操作ボタン -->
     <div class="controls">
-      <button id="start-btn" class="btn primary">スタート</button>
-      <button id="clear-btn" class="btn warning" disabled>描き直し</button>
-      <button id="check-btn" class="btn secondary" disabled>判定する</button>
-      <button id="retry-btn" class="btn outline">リトライ</button>
+      <button id="start-btn" class="btn btn-primary">スタート</button>
+      <button id="clear-btn" class="btn btn-sub" disabled>描き直し</button>
+      <button id="check-btn" class="btn btn-accent" disabled>判定する</button>
+      <button id="retry-btn" class="btn btn-outline">リセット</button>
     </div>
 
-    <!-- ランキング表示エリア -->
-    <div class="ranking-container">
-      <h2>🏆 ハイスコアランキング</h2>
+    <div class="ranking-section">
+      <div class="ranking-header">
+        <h2>ハイスコアランキング</h2>
+        <button id="reset-ranking-btn" class="text-btn">履歴を消去</button>
+      </div>
       <ul id="ranking-list"></ul>
-      <button id="reset-ranking-btn" class="reset-btn">履歴をリセット</button>
     </div>
   </div>
 

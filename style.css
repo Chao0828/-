@@ -1,120 +1,274 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
-  background-color: #f0f4f8;
+  background-color: #eae6df;
+  color: #26282a;
+  font-family: 'Noto Sans JP', sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
   margin: 0;
   padding: 20px;
 }
 
-.app-container {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  text-align: center;
+.card {
+  background-color: #fdfcfa;
+  border: 1px solid #dcd6cc;
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(38, 40, 42, 0.07), 0 2px 6px rgba(38, 40, 42, 0.04);
+  padding: 30px 28px;
   width: 100%;
-  max-width: 450px;
+  max-width: 460px;
+  text-align: center;
 }
 
-.header h1 {
-  color: #2c3e50;
-  font-size: 28px;
-  margin: 0 0 10px 0;
-  letter-spacing: 2px;
+.hidden {
+  display: none !important;
 }
 
-#high-score-badge {
+/* タイトル画面 */
+.sub-label {
   display: inline-block;
-  background: #fff3cd;
-  color: #856404;
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 14px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: #1f6f66;
+  background-color: #ebf3f2;
+  padding: 5px 12px;
+  border-radius: 99px;
+  margin-bottom: 12px;
 }
 
-/* 名前入力とモード選択 */
-.settings-area {
+.main-title {
+  font-size: 30px;
+  font-weight: 900;
+  color: #1c1e20;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px 0;
+}
+
+.lead {
+  font-size: 13.5px;
+  color: #63686e;
+  line-height: 1.65;
+  margin: 0 0 24px 0;
+}
+
+.rules {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.rule-item {
+  flex: 1;
+  background-color: #f6f3ee;
+  border: 1px solid #e7e1d7;
+  border-radius: 12px;
+  padding: 12px 6px;
+}
+
+.step-num {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #1f6f66;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.rule-item p {
+  font-size: 12px;
+  font-weight: 700;
+  color: #36393d;
+  margin: 0;
+}
+
+.login-box {
+  background-color: #f6f3ee;
+  border: 1px solid #e7e1d7;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.login-box label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #36393d;
+  margin-bottom: 10px;
+}
+
+#player-name-input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  text-align: center;
+  color: #1c1e20;
+  background-color: #ffffff;
+  border: 1.5px solid #c9c2b6;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#player-name-input:focus {
+  border-color: #1f6f66;
+  box-shadow: 0 0 0 3px rgba(31, 111, 102, 0.12);
+}
+
+.shake {
+  animation: shake 0.3s ease;
+  border-color: #d94e3f !important;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.error-msg {
+  color: #d94e3f;
+  font-size: 12px;
+  font-weight: 700;
+  margin: 6px 0 12px 0;
+  min-height: 18px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.error-msg.visible {
+  opacity: 1;
+}
+
+/* ゲーム画面ヘッダー */
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #ebe6dd;
+  font-size: 13px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-label {
+  font-size: 11px;
+  color: #757a80;
+  background-color: #f0ece4;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.best-score-box {
+  background-color: #fbf4e4;
+  border: 1px solid #edd9ad;
+  color: #876014;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+
+.best-score-box strong {
+  font-size: 14px;
+}
+
+.mode-bar {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-}
-
-#player-name, #mode-select {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 2px solid #bdc3c7;
-  background-color: #f8f9fa;
+  margin-bottom: 10px;
   font-size: 13px;
-  font-weight: bold;
-  color: #2c3e50;
+  font-weight: 700;
+  color: #494d52;
+}
+
+#mode-select {
+  padding: 7px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #26282a;
+  background-color: #f6f3ee;
+  border: 1.5px solid #d2cbc0;
+  border-radius: 10px;
+  cursor: pointer;
   outline: none;
+  transition: border-color 0.2s;
 }
 
-#player-name {
-  width: 165px;
+#mode-select:hover:not(:disabled) {
+  border-color: #1f6f66;
 }
 
-#player-name:focus, #mode-select:focus {
-  border-color: #2193b0;
-}
-
-#player-name:disabled, #mode-select:disabled {
-  opacity: 0.6;
+#mode-select:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+.message-area {
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 #result-text {
   font-size: 15px;
-  font-weight: bold;
-  color: #2c3e50;
-  min-height: 22px;
-  margin: 10px 0;
+  font-weight: 700;
+  color: #26282a;
+  margin: 0;
 }
 
-/* ユニーク称号バッジ */
 #title-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #ff758c, #ff7eb3);
-  color: white;
-  padding: 8px 20px;
-  border-radius: 30px;
-  font-size: 15px;
-  font-weight: bold;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 10px rgba(255, 117, 140, 0.3);
-}
-
-#title-badge.hidden {
-  display: none;
+  background-color: #26282a;
+  color: #fdfcfa;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 5px 16px;
+  border-radius: 99px;
+  margin-top: 6px;
 }
 
 /* キャンバス枠 */
 #p5-wrapper {
-  margin: 0 auto 20px auto;
-  border: 4px dashed #bdc3c7;
-  border-radius: 12px;
-  background-color: #fafafa;
-  width: 400px;
-  height: 400px;
+  width: 404px;
+  height: 404px;
+  margin: 0 auto 18px auto;
+  border: 2px solid #26282a;
+  border-radius: 10px;
   overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-color: #f9f7f2;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 #p5-wrapper canvas {
   display: block;
 }
 
-/* 操作ボタン */
+/* ボタン */
 .controls {
   display: flex;
   justify-content: center;
@@ -124,98 +278,137 @@ body {
 
 .btn {
   padding: 10px 16px;
-  border-radius: 30px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
   border: none;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
 }
 
 .btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  transform: translateY(-1px);
 }
 
 .btn:active:not(:disabled) {
   transform: translateY(1px);
 }
 
-/* 押せない状態のボタンは薄くする */
 .btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
-.primary {
-  background: linear-gradient(135deg, #6dd5ed, #2193b0);
-  color: white;
+.btn-full {
+  width: 100%;
+  padding: 13px;
+  font-size: 15px;
 }
 
-.warning {
-  background: linear-gradient(135deg, #ff9a9e, #fecfef);
-  color: #8a2be2;
+.btn-primary {
+  background-color: #1f6f66;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(31, 111, 102, 0.25);
 }
 
-.secondary {
-  background: linear-gradient(135deg, #f2994a, #f2c94c);
-  color: white;
+.btn-primary:hover:not(:disabled) {
+  background-color: #185952;
 }
 
-.outline {
-  background: white;
-  color: #7f8c8d;
-  border: 2px solid #bdc3c7;
-  box-shadow: none;
+.btn-sub {
+  background-color: #ebe6dd;
+  color: #36393d;
+}
+
+.btn-sub:hover:not(:disabled) {
+  background-color: #dfd8cc;
+}
+
+.btn-accent {
+  background-color: #d94e3f;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(217, 78, 63, 0.25);
+}
+
+.btn-accent:hover:not(:disabled) {
+  background-color: #c24133;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #63686e;
+  border: 1.5px solid #d2cbc0;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: #f6f3ee;
+  color: #26282a;
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: #7c8187;
+  font-family: inherit;
+  font-size: 11.5px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.text-btn:hover {
+  color: #d94e3f;
 }
 
 /* ランキング */
-.ranking-container {
-  margin-top: 25px;
-  border-top: 2px dashed #bdc3c7;
-  padding-top: 18px;
+.ranking-section {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #ebe6dd;
 }
 
-.ranking-container h2 {
-  color: #2c3e50;
-  font-size: 17px;
-  margin-bottom: 12px;
+.ranking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.ranking-header h2 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #36393d;
+  margin: 0;
 }
 
 #ranking-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 12px 0;
+  margin: 0;
 }
 
 #ranking-list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fa;
-  margin-bottom: 8px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 13px;
-  color: #34495e;
+  background-color: #f6f3ee;
+  border: 1px solid #e7e1d7;
+  padding: 9px 14px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  color: #26282a;
 }
 
-#ranking-list li:nth-child(1) { background: #fff3cd; color: #856404; }
-#ranking-list li:nth-child(2) { background: #e2e3e5; color: #383d41; }
-#ranking-list li:nth-child(3) { background: #f8d7da; color: #721c24; }
-
-.reset-btn {
-  background: none;
-  border: none;
-  color: #95a5a6;
-  font-size: 12px;
-  text-decoration: underline;
-  cursor: pointer;
+#ranking-list li:nth-child(1) {
+  background-color: #fbf4e4;
+  border-color: #e8cf96;
+  font-weight: 700;
 }
 
-.reset-btn:hover {
-  color: #e74c3c;
+.rank-score {
+  font-weight: 900;
+  color: #d94e3f;
+  font-size: 13.5px;
 }

@@ -1,0 +1,101 @@
+/* 画面全体の設定 */
+body {
+  background-color: #f0f4f8; /* 淡いブルーグレーで爽やかに */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+
+/* メインのカード型コンテナ */
+.app-container {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  width: 100%;
+  max-width: 450px; /* PCで見ても大きすぎないように */
+}
+
+.header h1 {
+  color: #2c3e50;
+  font-size: 28px;
+  margin: 0 0 10px 0;
+  letter-spacing: 2px;
+}
+
+#result-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #e74c3c;
+  height: 24px;
+  margin-bottom: 20px;
+  transition: color 0.3s;
+}
+
+/* キャンバスを囲う枠（ここでサイズをカチッと固定します） */
+#p5-wrapper {
+  margin: 0 auto 25px auto;
+  border: 4px dashed #bdc3c7; /* 点線の枠でおしゃれに */
+  border-radius: 12px;
+  background-color: #fafafa;
+  /* p5.jsのキャンバスサイズと合わせる */
+  width: 400px;
+  height: 400px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* p5.jsが自動生成するcanvasタグ自体の設定 */
+#p5-wrapper canvas {
+  display: block;
+}
+
+/* ボタン周りのデザイン */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border-radius: 30px; /* 丸みのあるボタン */
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease; /* ふわっと動くアニメーション */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* ボタンを押したとき・乗せたときのアクション */
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* 色違いのボタンスタイル */
+.primary {
+  background: linear-gradient(135deg, #6dd5ed, #2193b0);
+  color: white;
+}
+.secondary {
+  background: linear-gradient(135deg, #f2994a, #f2c94c);
+  color: white;
+}
+.outline {
+  background: white;
+  color: #7f8c8d;
+  border: 2px solid #bdc3c7;
+  box-shadow: none;
+}

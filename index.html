@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>瞬間記憶！なぞり書きアート</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- p5.jsのライブラリ -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <div class="header">
+      <h1>なぞり書き<br>メモリー</h1>
+      <p id="result-text">「スタート」を押して図形を記憶！</p>
+    </div>
+
+    <!-- p5.jsのキャンバスが入る場所 -->
+    <div id="p5-wrapper"></div>
+
+    <div class="controls">
+      <button id="start-btn" class="btn primary">スタート</button>
+      <button id="check-btn" class="btn secondary">判定する</button>
+      <button id="retry-btn" class="btn outline">リトライ</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

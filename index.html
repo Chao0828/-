@@ -3,25 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>瞬間記憶！なぞり書きアート</title>
+  <title>瞬間記憶！なぞり書きメモリー</title>
   <link rel="stylesheet" href="style.css">
-  <!-- p5.jsのライブラリ -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.min.js"></script>
 </head>
 <body>
   <div class="app-container">
     <div class="header">
       <h1>なぞり書き<br>メモリー</h1>
+      
+      <!-- 最高スコア表示 -->
+      <div id="high-score-badge">👑 最高スコア: <span id="best-score">--</span> ％</div>
+
+      <!-- プレイヤー名＆モード選択エリア -->
+      <div class="settings-area">
+        <input type="text" id="player-name" placeholder="名前を入力 (最大10文字)" maxlength="10">
+        <select id="mode-select">
+          <option value="normal">🖊️ 普通モード</option>
+          <option value="vanish">👻 消えるインク（上級）</option>
+        </select>
+      </div>
+
       <p id="result-text">「スタート」を押して図形を記憶！</p>
+      
+      <!-- ユニーク称号バッジ -->
+      <div id="title-badge" class="hidden"></div>
     </div>
 
     <!-- p5.jsのキャンバスが入る場所 -->
     <div id="p5-wrapper"></div>
 
+    <!-- 操作ボタン -->
     <div class="controls">
       <button id="start-btn" class="btn primary">スタート</button>
-      <button id="check-btn" class="btn secondary">判定する</button>
+      <button id="clear-btn" class="btn warning" disabled>描き直し</button>
+      <button id="check-btn" class="btn secondary" disabled>判定する</button>
       <button id="retry-btn" class="btn outline">リトライ</button>
+    </div>
+
+    <!-- ランキング表示エリア -->
+    <div class="ranking-container">
+      <h2>🏆 ハイスコアランキング</h2>
+      <ul id="ranking-list"></ul>
+      <button id="reset-ranking-btn" class="reset-btn">履歴をリセット</button>
     </div>
   </div>
 

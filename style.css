@@ -1,6 +1,5 @@
-/* 画面全体の設定 */
 body {
-  background-color: #f0f4f8; /* 淡いブルーグレーで爽やかに */
+  background-color: #f0f4f8;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -10,7 +9,6 @@ body {
   padding: 20px;
 }
 
-/* メインのカード型コンテナ */
 .app-container {
   background: #ffffff;
   padding: 30px;
@@ -18,7 +16,7 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   text-align: center;
   width: 100%;
-  max-width: 450px; /* PCで見ても大きすぎないように */
+  max-width: 450px;
 }
 
 .header h1 {
@@ -28,22 +26,82 @@ body {
   letter-spacing: 2px;
 }
 
-#result-text {
-  font-size: 16px;
+#high-score-badge {
+  display: inline-block;
+  background: #fff3cd;
+  color: #856404;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 14px;
   font-weight: bold;
-  color: #e74c3c;
-  height: 24px;
-  margin-bottom: 20px;
-  transition: color 0.3s;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* キャンバスを囲う枠（ここでサイズをカチッと固定します） */
+/* 名前入力とモード選択 */
+.settings-area {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+#player-name, #mode-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid #bdc3c7;
+  background-color: #f8f9fa;
+  font-size: 13px;
+  font-weight: bold;
+  color: #2c3e50;
+  outline: none;
+}
+
+#player-name {
+  width: 165px;
+}
+
+#player-name:focus, #mode-select:focus {
+  border-color: #2193b0;
+}
+
+#player-name:disabled, #mode-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#result-text {
+  font-size: 15px;
+  font-weight: bold;
+  color: #2c3e50;
+  min-height: 22px;
+  margin: 10px 0;
+}
+
+/* ユニーク称号バッジ */
+#title-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff758c, #ff7eb3);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(255, 117, 140, 0.3);
+}
+
+#title-badge.hidden {
+  display: none;
+}
+
+/* キャンバス枠 */
 #p5-wrapper {
-  margin: 0 auto 25px auto;
-  border: 4px dashed #bdc3c7; /* 点線の枠でおしゃれに */
+  margin: 0 auto 20px auto;
+  border: 4px dashed #bdc3c7;
   border-radius: 12px;
   background-color: #fafafa;
-  /* p5.jsのキャンバスサイズと合わせる */
   width: 400px;
   height: 400px;
   overflow: hidden;
@@ -52,50 +110,112 @@ body {
   align-items: center;
 }
 
-/* p5.jsが自動生成するcanvasタグ自体の設定 */
 #p5-wrapper canvas {
   display: block;
 }
 
-/* ボタン周りのデザイン */
+/* 操作ボタン */
 .controls {
   display: flex;
   justify-content: center;
-  gap: 15px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn {
-  padding: 12px 24px;
-  border-radius: 30px; /* 丸みのあるボタン */
-  font-size: 15px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
   border: none;
-  transition: all 0.2s ease; /* ふわっと動くアニメーション */
+  transition: all 0.2s ease;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-/* ボタンを押したとき・乗せたときのアクション */
-.btn:hover {
+.btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
-.btn:active {
+
+.btn:active:not(:disabled) {
   transform: translateY(1px);
 }
 
-/* 色違いのボタンスタイル */
+/* 押せない状態のボタンは薄くする */
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .primary {
   background: linear-gradient(135deg, #6dd5ed, #2193b0);
   color: white;
 }
+
+.warning {
+  background: linear-gradient(135deg, #ff9a9e, #fecfef);
+  color: #8a2be2;
+}
+
 .secondary {
   background: linear-gradient(135deg, #f2994a, #f2c94c);
   color: white;
 }
+
 .outline {
   background: white;
   color: #7f8c8d;
   border: 2px solid #bdc3c7;
   box-shadow: none;
+}
+
+/* ランキング */
+.ranking-container {
+  margin-top: 25px;
+  border-top: 2px dashed #bdc3c7;
+  padding-top: 18px;
+}
+
+.ranking-container h2 {
+  color: #2c3e50;
+  font-size: 17px;
+  margin-bottom: 12px;
+}
+
+#ranking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px 0;
+}
+
+#ranking-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 13px;
+  color: #34495e;
+}
+
+#ranking-list li:nth-child(1) { background: #fff3cd; color: #856404; }
+#ranking-list li:nth-child(2) { background: #e2e3e5; color: #383d41; }
+#ranking-list li:nth-child(3) { background: #f8d7da; color: #721c24; }
+
+.reset-btn {
+  background: none;
+  border: none;
+  color: #95a5a6;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  color: #e74c3c;
 }
